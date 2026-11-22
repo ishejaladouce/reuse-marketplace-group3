@@ -39,6 +39,17 @@ class _ProfileBody extends ConsumerWidget {
     return parts.take(2).map((p) => p[0].toUpperCase()).join();
   }
 
+  String get _badgeLabel {
+    switch (profile.verificationBadge) {
+      case 'id_verified':
+        return 'ID verified';
+      case 'phone_verified':
+        return 'Phone verified';
+      default:
+        return 'Not verified yet';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
@@ -71,7 +82,7 @@ class _ProfileBody extends ConsumerWidget {
               size: 18,
               color: profile.isVerified ? AppColors.primary : AppColors.textMuted,
             ),
-            label: Text(profile.isVerified ? 'Verified' : 'Not verified yet'),
+            label: Text(_badgeLabel),
           ),
         ),
         const SizedBox(height: 24),
@@ -88,13 +99,21 @@ class _ProfileBody extends ConsumerWidget {
           value: profile.bio.isEmpty ? 'Not added yet' : profile.bio,
         ),
         const SizedBox(height: 24),
-        FilledButton.icon(
+        if (!profile.isVerified) ...[
+          FilledButton.icon(
+            onPressed: () => context.push('/profile/verify'),
+            icon: const Icon(Icons.verified_outlined),
+            label: const Text('Get verified'),
+          ),
+          const SizedBox(height: 12),
+        ],
+        OutlinedButton.icon(
           onPressed: () => context.push('/profile/edit'),
           icon: const Icon(Icons.edit_outlined),
           label: const Text('Edit profile'),
         ),
         const SizedBox(height: 12),
-        OutlinedButton.icon(
+        TextButton.icon(
           onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
           icon: const Icon(Icons.logout),
           label: const Text('Log out'),

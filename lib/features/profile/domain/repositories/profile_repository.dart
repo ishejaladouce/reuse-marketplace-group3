@@ -11,4 +11,7 @@ abstract class ProfileRepository {
     required String bio,
     required String generalLocation,
   });
+
+  /// Saves the verification badge (simulated verification).
+  Future<void> setVerificationBadge({required String uid, required String badge});
 }

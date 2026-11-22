@@ -45,3 +45,27 @@ class EditProfileController extends AsyncNotifier<void> {
 
 final editProfileControllerProvider =
     AsyncNotifierProvider<EditProfileController, void>(EditProfileController.new);
+
+/// Simulated verification: waits then saves the badge.
+/// In a real app, a trusted server would check documents and set the badge.
+class VerificationController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<bool> verify(String badge) async {
+    final user = ref.read(authStateProvider).asData?.value;
+    if (user == null) return false;
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      await ref
+          .read(profileRepositoryProvider)
+          .setVerificationBadge(uid: user.uid, badge: badge);
+    });
+    return !state.hasError;
+  }
+}
+
+final verificationControllerProvider =
+    AsyncNotifierProvider<VerificationController, void>(VerificationController.new);

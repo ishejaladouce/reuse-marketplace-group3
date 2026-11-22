@@ -41,4 +41,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  @override
+  Future<void> setVerificationBadge({required String uid, required String badge}) {
+    return _doc(uid).update({
+      'verificationBadge': badge,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }
