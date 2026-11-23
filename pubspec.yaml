@@ -1,5 +1,6 @@
+
 name: reuse_marketplace
-description: Reuse Marketplace - Michaella's screens (messages, checkout, orders, notifications, community, settings, reviews).
+description: ReUse Marketplace Flutter application
 publish_to: "none"
 version: 0.1.0
 
@@ -9,7 +10,28 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # UI and navigation
   google_fonts: ^6.2.1
+  material_ui: ^1.11.1
+  cupertino_icons: ^1.0.8
+  go_router: ^18.1.4
+
+  # Firebase
+  firebase_core: ^5.2.0
+  firebase_auth: ^7.1.0
+  cloud_firestore: ^7.2.0
+  google_sign_in: ^7.2.0
+
+  # State management
+  flutter_riverpod: ^3.5.0
+
+  # Supabase Storage and environment configuration
+  supabase_flutter: ^2.18.3
+  flutter_dotenv: ^5.2.1
+
+  # Image selection
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +40,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - config.env

@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Public profile: signed-in users can read it, only the owner can change it.
+    // New accounts always start unverified, and the badge can only take allowed values.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.verificationBadge == 'none';
+      allow update: if isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.verificationBadge in ['none', 'id_verified', 'phone_verified'];
+      allow delete: if false;
+    }
+
+    // Private details (email, phone): only the owner can read or change them.
+    match /userPrivate/{uid} {
+      allow read, create, update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    // Reviews: one per order (the review ID is the order ID).
+    // Anyone signed in can read; only the reviewer can create, and reviews cannot be edited.
+    match /reviews/{orderId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.reviewerId == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      allow update, delete: if false;
+    }
+
+    // Teammates' collections (listings, orders, chats...): signed-in users only,
+    // until each owner adds their own rules. My three collections are excluded.
+    match /{collection}/{docId=**} {
+      allow read, write: if signedIn()
+        && !(collection in ['users', 'userPrivate', 'reviews']);
+    }
+  }
+}
