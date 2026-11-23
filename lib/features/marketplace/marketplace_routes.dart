@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'presentation/screens/marketplace_home_screen.dart';
+import '../listings/presentation/screens/marketplace_home_screen.dart';
 import '../listings/presentation/screens/create_edit_listing_screen.dart';
 import '../listings/presentation/screens/my_listings_screen.dart';
 import '../looking_for/presentation/screens/looking_for_screen.dart';

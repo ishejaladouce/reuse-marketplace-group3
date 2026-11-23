@@ -2,8 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/looking_for_request_model.dart';
-import '../../data/repositories/looking_for_repository_impl.dart';
-import '../../domain/repositories/looking_for_repository.dart';
+import '../../domain/repositories/looking_for_repository_impl.dart';import '../../domain/repositories/looking_for_repository.dart';
 
 // Repository dependency.
 final lookingForRepositoryProvider =

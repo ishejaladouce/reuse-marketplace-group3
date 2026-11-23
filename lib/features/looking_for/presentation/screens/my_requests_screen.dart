@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/looking_for_providers.dart';
+import '../../../listings/presentation/providers/looking_for_providers.dart';
 import 'create_edit_request_screen.dart';
 import 'looking_for_screen.dart';
 

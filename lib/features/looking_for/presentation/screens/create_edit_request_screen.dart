@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/models/looking_for_request_model.dart';
-import '../providers/looking_for_providers.dart';
+import '../../../listings/data/models/looking_for_request_model.dart';
+import '../../../listings/presentation/providers/looking_for_providers.dart';
 
 class CreateEditRequestScreen extends ConsumerStatefulWidget {
   final LookingForRequestModel? request;

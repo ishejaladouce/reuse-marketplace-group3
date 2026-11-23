@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/repositories/looking_for_repository.dart';
-import '../models/looking_for_request_model.dart';
-
+import '../../data/models/looking_for_request_model.dart';
 class LookingForRepositoryImpl implements LookingForRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;

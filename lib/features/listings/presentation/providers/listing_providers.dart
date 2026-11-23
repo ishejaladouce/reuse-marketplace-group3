@@ -2,8 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/listing_model.dart';
-import '../../data/repositories/listing_repository_impl.dart';
-import '../../domain/repositories/listing_repository.dart';
+import '../../domain/repositories/listing_repository_impl.dart';import '../../domain/repositories/listing_repository.dart';
 
 // Repository dependency.
 final listingRepositoryProvider = Provider<ListingRepository>((ref) {

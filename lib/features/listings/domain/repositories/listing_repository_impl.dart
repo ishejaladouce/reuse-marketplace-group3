@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/repositories/listing_repository.dart';
-import '../models/listing_model.dart';
-
+import '../../data/models/listing_model.dart';
 class ListingRepositoryImpl implements ListingRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
