@@ -7,7 +7,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../providers/auth_provider.dart';
 
-/// Login screen with email and password.
+/// Login screen with email/password and Google authentication.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -31,18 +31,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
+
     if (!_formKey.currentState!.validate()) return;
-    final success = await ref.read(authControllerProvider.notifier).signIn(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+
+    final success =
+        await ref.read(authControllerProvider.notifier).signIn(
+              email: _emailController.text,
+              password: _passwordController.text,
+            );
+
     if (!mounted) return;
+
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authErrorMessage(ref.read(authControllerProvider).error))),
+        SnackBar(
+          content: Text(
+            authErrorMessage(ref.read(authControllerProvider).error),
+          ),
+        ),
       );
     }
-    // On success, the router automatically opens the next screen.
+  }
+
+  Future<void> _signInWithGoogle() async {
+    FocusScope.of(context).unfocus();
+
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .signInWithGoogle();
+
+    if (!mounted) return;
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authErrorMessage(ref.read(authControllerProvider).error),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -52,7 +80,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -61,15 +92,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('WELCOME BACK',
-                    style: textTheme.labelMedium?.copyWith(
-                        color: AppColors.primary, fontWeight: FontWeight.w600, letterSpacing: 1.2)),
+                Text(
+                  'WELCOME BACK',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('Log in to your account',
-                    style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+                Text(
+                  'Log in to your account',
+                  style: textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('Buy, sell and connect with your community.',
-                    style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted)),
+                Text(
+                  'Buy, sell and connect with your community.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 AppTextField(
                   label: 'Email',
@@ -88,16 +132,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     obscureText: hidden,
                     textInputAction: TextInputAction.done,
                     suffix: IconButton(
-                      icon: Icon(hidden ? Icons.visibility_off : Icons.visibility),
-                      tooltip: hidden ? 'Show password' : 'Hide password',
-                      onPressed: () => _hidePassword.value = !hidden,
+                      icon: Icon(
+                        hidden
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      tooltip:
+                          hidden ? 'Show password' : 'Hide password',
+                      onPressed: () =>
+                          _hidePassword.value = !hidden,
                     ),
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => context.push('/forgot-password'),
+                    onPressed: () =>
+                        context.push('/forgot-password'),
                     child: const Text('Forgot password?'),
                   ),
                 ),
@@ -111,16 +162,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? const SizedBox(
                             width: 22,
                             height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Text('Log in'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'OR',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        isLoading ? null : _signInWithGoogle,
+                    icon: const Icon(Icons.account_circle_outlined),
+                    label: const Text('Continue with Google'),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Center(
                   child: TextButton(
-                    onPressed: () => context.pushReplacement('/signup'),
-                    child: const Text("Don't have an account? Sign up"),
+                    onPressed: () =>
+                        context.pushReplacement('/signup'),
+                    child: const Text(
+                      "Don't have an account? Sign up",
+                    ),
                   ),
                 ),
               ],

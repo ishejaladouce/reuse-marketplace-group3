@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../domain/repositories/auth_repository.dart';
 
@@ -9,6 +10,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+
+  static Future<void>? _googleInitialization;
+
+  Future<void> _initializeGoogle() {
+    return _googleInitialization ??=
+        GoogleSignIn.instance.initialize(
+  serverClientId: '999322875215-k3p3ssedbfkcgcrm1qjlvjm8aoh9ibhk.apps.googleusercontent.com',
+);
+  }
 
   @override
   Stream<User?> authStateChanges() => _auth.authStateChanges();
@@ -27,11 +37,12 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email.trim(),
       password: password,
     );
+
     final user = credential.user!;
     await user.updateDisplayName(fullName.trim());
 
     final now = FieldValue.serverTimestamp();
-    // Public profile: safe for other users to read.
+
     await _firestore.collection('users').doc(user.uid).set({
       'uid': user.uid,
       'displayName': fullName.trim(),
@@ -42,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
       'createdAt': now,
       'updatedAt': now,
     });
-    // Private account data: only the owner can read it.
+
     await _firestore.collection('userPrivate').doc(user.uid).set({
       'uid': user.uid,
       'email': email.trim(),
@@ -56,8 +67,85 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signIn({required String email, required String password}) {
-    return _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) {
+    return _auth.signInWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    await _initializeGoogle();
+
+    final googleSignIn = GoogleSignIn.instance;
+
+    if (!googleSignIn.supportsAuthenticate()) {
+      throw UnsupportedError(
+        'Google Sign-In is not supported on this platform.',
+      );
+    }
+
+    final googleUser = await googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
+
+    if (googleAuth.idToken == null) {
+      throw FirebaseAuthException(
+        code: 'missing-google-token',
+        message: 'Google did not return an authentication token.',
+      );
+    }
+
+    final credential = GoogleAuthProvider.credential(
+      idToken: googleAuth.idToken,
+    );
+
+    final result = await _auth.signInWithCredential(credential);
+    final user = result.user;
+
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'google-sign-in-failed',
+        message: 'Google authentication did not return a user.',
+      );
+    }
+
+    final profileRef = _firestore.collection('users').doc(user.uid);
+    final privateRef = _firestore.collection('userPrivate').doc(user.uid);
+
+    final now = FieldValue.serverTimestamp();
+
+    // Create missing profiles only. Existing user data is preserved.
+    final profile = await profileRef.get();
+
+    if (!profile.exists) {
+      await profileRef.set({
+        'uid': user.uid,
+        'displayName': user.displayName ?? googleUser.displayName ?? '',
+        'photoUrl': user.photoURL,
+        'bio': '',
+        'generalLocation': '',
+        'verificationBadge': 'none',
+        'createdAt': now,
+        'updatedAt': now,
+      });
+    }
+
+    final privateProfile = await privateRef.get();
+
+    if (!privateProfile.exists) {
+      await privateRef.set({
+        'uid': user.uid,
+        'email': user.email ?? googleUser.email,
+        'phoneNumber': user.phoneNumber,
+        'notificationOptIn': true,
+        'createdAt': now,
+        'updatedAt': now,
+      });
+    }
   }
 
   @override
@@ -76,5 +164,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    await _auth.signOut();
+
+    // Clear Google's cached session when available.
+    if (_googleInitialization != null) {
+      await _initializeGoogle();
+      await GoogleSignIn.instance.signOut();
+    }
+  }
 }

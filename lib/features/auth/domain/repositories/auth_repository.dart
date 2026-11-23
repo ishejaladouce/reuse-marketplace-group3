@@ -12,7 +12,13 @@ abstract class AuthRepository {
     required String password,
     String? phoneNumber,
   });
-  Future<void> signIn({required String email, required String password});
+
+  Future<void> signIn({
+    required String email,
+    required String password,
+  });
+
+  Future<void> signInWithGoogle();
   Future<void> sendPasswordReset(String email);
   Future<void> sendEmailVerification();
   Future<void> reloadUser();
