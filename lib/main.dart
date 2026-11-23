@@ -9,27 +9,48 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 import 'firebase_options.dart';
 
+/// Entry point for the ReUse Marketplace application.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase for authentication and Firestore.
+  // 1. Initialize Firebase Authentication and Firestore.
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Load Supabase configuration.
+  // 2. Load the Supabase configuration.
   await dotenv.load(fileName: 'config.env');
 
-  // Initialize Supabase Storage with Firebase authentication.
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
+  final supabasePublishableKey =
+      dotenv.env['SUPABASE_PUBLISHABLE_KEY'];
+
+  // 3. Validate environment configuration.
+  if (supabaseUrl == null ||
+      supabaseUrl.isEmpty ||
+      supabasePublishableKey == null ||
+      supabasePublishableKey.isEmpty) {
+    throw StateError(
+      'Missing Supabase configuration in config.env.',
+    );
+  }
+
+  // 4. Initialize Supabase Storage with Firebase authentication.
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+    url: supabaseUrl,
+    publishableKey: supabasePublishableKey,
     accessToken: () async {
-      return FirebaseAuth.instance.currentUser?.getIdToken();
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        return null;
+      }
+
+      return await user.getIdToken();
     },
   );
 
-  // Start the application with Riverpod.
+  // 5. Start the application with Riverpod.
   runApp(
     const ProviderScope(
       child: ReuseMarketplaceApp(),
