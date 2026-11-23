@@ -26,9 +26,9 @@ dependencies:
   # State management
   flutter_riverpod: ^3.5.0
 
-  # Supabase Storage and environment configuration
+  # Supabase Storage 
   supabase_flutter: ^2.18.3
-  flutter_dotenv: ^6.0.2
+  
 
   # Image selection
   image_picker: ^1.1.2
@@ -44,6 +44,5 @@ flutter:
   uses-material-design: true
 
   assets:
-    - config.env
     - assets/images/welcome/
     - assets/images/categories/
