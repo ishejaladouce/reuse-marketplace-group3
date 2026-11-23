@@ -19,7 +19,7 @@ class ReviewRepositoryImpl implements ReviewRepository {
       orderId: orderId,
       buyerId: data['buyerId'] as String? ?? '',
       sellerId: data['sellerId'] as String? ?? '',
-      itemTitle: data['itemTitle'] as String? ?? 'Your order',
+itemTitle: data['listingTitle'] as String? ?? 'Your order',
       status: data['status'] as String? ?? '',
     );
   }

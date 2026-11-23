@@ -3,9 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../chat/presentation/providers/chat_providers.dart';
+import '../../../../screens/chat_screen.dart';
 import '../providers/listing_providers.dart';
 
-class ListingDetailsScreen extends ConsumerWidget {
+class ListingDetailsScreen extends ConsumerStatefulWidget {
   final String listingId;
 
   const ListingDetailsScreen({
@@ -14,9 +16,68 @@ class ListingDetailsScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ListingDetailsScreen> createState() =>
+      _ListingDetailsScreenState();
+}
+
+class _ListingDetailsScreenState
+    extends ConsumerState<ListingDetailsScreen> {
+  bool _openingChat = false;
+
+  Future<void> _contactSeller() async {
+    if (_openingChat) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in to contact the seller.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _openingChat = true);
+
+    try {
+      final conversationId = await ref
+          .read(chatControllerProvider)
+          .startConversation(widget.listingId);
+
+      if (!mounted) return;
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            conversationId: conversationId,
+          ),
+        ),
+      );
+    } catch (error, stackTrace) {
+  debugPrint('CHAT ERROR: $error');
+  debugPrintStack(stackTrace: stackTrace);
+
+  if (!mounted) return;
+
+ final messenger = ScaffoldMessenger.maybeOf(context);
+
+  messenger?.showSnackBar(
+    SnackBar(
+      content: Text('Unable to open chat: $error'),
+    ),
+  );
+}finally {
+      if (mounted) {
+        setState(() => _openingChat = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final listingAsync = ref.watch(
-      listingDetailsProvider(listingId),
+      listingDetailsProvider(widget.listingId),
     );
 
     return Scaffold(
@@ -36,7 +97,8 @@ class ListingDetailsScreen extends ConsumerWidget {
           }
 
           final theme = Theme.of(context);
-          final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+          final currentUserId =
+              FirebaseAuth.instance.currentUser?.uid;
           final isOwner = currentUserId == listing.sellerId;
 
           return ListView(
@@ -59,7 +121,9 @@ class ListingDetailsScreen extends ConsumerWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
                                 const Center(
-                              child: Icon(Icons.broken_image_outlined),
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                              ),
                             ),
                           );
                         },
@@ -72,14 +136,16 @@ class ListingDetailsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       listing.title,
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      style:
+                          theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       '${listing.currency} ${listing.price.toStringAsFixed(0)}',
-                      style: theme.textTheme.headlineMedium?.copyWith(
+                      style:
+                          theme.textTheme.headlineMedium?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,
                       ),
@@ -108,7 +174,9 @@ class ListingDetailsScreen extends ConsumerWidget {
                       children: [
                         const Icon(Icons.location_on_outlined),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(listing.location)),
+                        Expanded(
+                          child: Text(listing.location),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -143,25 +211,28 @@ class ListingDetailsScreen extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        onPressed: isOwner
+                        onPressed: isOwner || _openingChat
                             ? null
-                            : () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Messaging will be connected '
-                                      'during team integration.',
-                                    ),
-                                  ),
-                                );
-                              },
-                        icon: Icon(
-                          isOwner
-                              ? Icons.person_outline
-                              : Icons.chat_bubble_outline,
-                        ),
+                            : _contactSeller,
+                        icon: _openingChat
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                isOwner
+                                    ? Icons.person_outline
+                                    : Icons.chat_bubble_outline,
+                              ),
                         label: Text(
-                          isOwner ? 'Your listing' : 'Contact seller',
+                          isOwner
+                              ? 'Your listing'
+                              : _openingChat
+                                  ? 'Opening chat...'
+                                  : 'Contact seller',
                         ),
                       ),
                     ),

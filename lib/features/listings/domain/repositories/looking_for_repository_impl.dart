@@ -1,6 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/repositories/looking_for_repository.dart';
 import '../../data/models/looking_for_request_model.dart';
@@ -48,8 +49,13 @@ class LookingForRepositoryImpl implements LookingForRepository {
       createdAt: now,
       updatedAt: now,
     );
+debugPrint('LOOKING FOR: Starting Firestore write');
 
-    await document.set(newRequest.toFirestore());
+await document
+    .set(newRequest.toFirestore())
+    .timeout(const Duration(seconds: 15));
+
+debugPrint('LOOKING FOR: Firestore write completed');
 
     return document.id;
   }

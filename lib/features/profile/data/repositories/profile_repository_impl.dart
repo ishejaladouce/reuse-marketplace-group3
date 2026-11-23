@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -13,8 +14,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Stream<UserProfile?> watchProfile(String uid) {
-    return _doc(uid).snapshots().map((snapshot) {
-      final data = snapshot.data();
+  debugPrint('PROFILE: Looking for UID $uid');
+
+  return _doc(uid).snapshots().map((snapshot) {
+    debugPrint('PROFILE: Document exists = ${snapshot.exists}');
+    debugPrint('PROFILE: Document ID = ${snapshot.id}');
+
+    final data = snapshot.data();
       if (data == null) return null;
       return UserProfile(
         uid: uid,

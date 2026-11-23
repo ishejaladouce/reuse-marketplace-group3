@@ -118,6 +118,7 @@ class _CreateEditRequestScreenState
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
 
     final user = FirebaseAuth.instance.currentUser;
 
@@ -192,7 +193,7 @@ class _CreateEditRequestScreenState
           ),
         ),
       );
-
+      _formKey.currentState?.reset();
       Navigator.pop(context, true);
     } catch (error) {
       if (!mounted) return;

@@ -32,6 +32,8 @@ dependencies:
 
   # Image selection
   image_picker: ^1.1.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -43,3 +45,5 @@ flutter:
 
   assets:
     - config.env
+    - assets/images/welcome/
+    - assets/images/categories/
