@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../reviews/data/models/review_model.dart';
+import '../../../reviews/presentation/providers/review_provider.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
 
@@ -86,6 +88,7 @@ class _ProfileBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 24),
+        _RatingTile(uid: profile.uid),
         _InfoTile(
           icon: Icons.location_on_outlined,
           label: 'Location',
@@ -119,6 +122,32 @@ class _ProfileBody extends ConsumerWidget {
           label: const Text('Log out'),
         ),
       ],
+    );
+  }
+}
+
+/// Shows the seller's average rating and opens their reviews.
+class _RatingTile extends ConsumerWidget {
+  const _RatingTile({required this.uid});
+
+  final String uid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reviews = ref.watch(sellerReviewsProvider(uid)).asData?.value ?? const <Review>[];
+    final hasReviews = reviews.isNotEmpty;
+    final summary = hasReviews
+        ? '${averageRating(reviews).toStringAsFixed(1)} out of 5 '
+            '(${reviews.length} review${reviews.length == 1 ? '' : 's'})'
+        : 'No reviews yet';
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.star_rounded, color: Colors.amber),
+      title: const Text('Rating', style: TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(summary),
+      trailing: hasReviews ? const Icon(Icons.chevron_right) : null,
+      onTap: hasReviews ? () => context.push('/users/$uid/reviews') : null,
     );
   }
 }

@@ -13,6 +13,8 @@ import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/verification_screen.dart';
+import '../../features/reviews/presentation/screens/review_screen.dart';
+import '../../features/reviews/presentation/screens/seller_reviews_screen.dart';
 import '../temp_home_screen.dart';
 
 /// Screens anyone can open without being logged in.
@@ -51,6 +53,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
       GoRoute(path: '/profile/verify', builder: (context, state) => const VerificationScreen()),
+      GoRoute(
+        path: '/orders/:orderId/review',
+        builder: (context, state) => ReviewScreen(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: '/users/:uid/reviews',
+        builder: (context, state) => SellerReviewsScreen(sellerId: state.pathParameters['uid']!),
+      ),
     ],
   );
 });
