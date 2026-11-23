@@ -7,14 +7,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart';
+import 'package:flutter/services.dart';
 
 /// Entry point of the ReUse Marketplace application.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Load environment variables.
-  await dotenv.load(fileName: '.env');
+try {
+  final content = await rootBundle.loadString('.env');
+  debugPrint('ENV asset found: ${content.length} characters');
+} catch (e) {
+  debugPrint('ENV asset loading failed: $e');
+}  
 
+  // 1. Load environment variables.
+await dotenv.load(fileName: 'config.env');
+
+debugPrint('Supabase environment loaded successfully');
   // 2. Initialize Firebase.
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
